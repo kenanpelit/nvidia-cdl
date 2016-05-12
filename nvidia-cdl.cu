@@ -193,7 +193,7 @@ std::vector<DeviceInfo> getDeviceInfoByNVML(const std::vector<std::string> &pciB
             deviceInfo.serial = std::string(deviceSerial);
         } else {
             std::cout << "Failed to get device serial: " << nvmlErrorToString(result) << std::endl;
-        }                                    
+        }
         deviceInfoArray.push_back(deviceInfo);
     }
 
@@ -233,6 +233,7 @@ void printDeviceInfo(
             std::cout << "Temperature: " << deviceInfo[i].temp << "C" << std::endl;
 	    std::cout << "UUID: " << deviceInfo[i].uuid << std::endl;
 	    std::cout << "Serial: " << deviceInfo[i].serial << std::endl;
+	    std::cout << "Bus ID: " << deviceInfo[i].pciBusID << std::endl;
         } else {
             std::cout << "Temperature: " << getTemperatureAsColorString(deviceInfo[i].temp) << deviceInfo[i].temp << "C" << REMOVE_ALL_ATTRIBUTES << std::endl;
         }
@@ -240,6 +241,7 @@ void printDeviceInfo(
             std::cout << "PCI bus ID: " << deviceInfo[i].pciBusID << std::endl;
             std::cout << "UUID: " << deviceInfo[i].uuid << std::endl;
 	    std::cout << "Serial: " << deviceInfo[i].serial << std::endl;
+	    std::cout << "Bus ID: " << deviceInfo[i].pciBusID << std::endl;
         }
 
         if (deviceInfo[i].runningProcessesInfo.size() > 0) {
