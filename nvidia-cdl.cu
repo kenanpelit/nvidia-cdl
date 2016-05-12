@@ -49,6 +49,7 @@ struct DeviceInfo {
     unsigned long long usedMemory;
     unsigned long long freeMemory;
     std::string uuid;
+    std::string serial;
     std::vector<RunningProcessInfo> runningProcessesInfo;
 
     DeviceInfo()
@@ -57,7 +58,8 @@ struct DeviceInfo {
         pciBusID("N/A"),
         totalMemory(0),
         usedMemory(0),
-        uuid("N/A")
+        uuid("N/A"),
+	serial("N/A")
     {
     }
 };
@@ -183,6 +185,15 @@ std::vector<DeviceInfo> getDeviceInfoByNVML(const std::vector<std::string> &pciB
         } else {
             std::cout << "Failed to get device uuid: " << nvmlErrorToString(result) << std::endl;
         }
+
+	// Get the device's serial.
+        char deviceSerial[NVML_DEVICE_SERIAL_BUFFER_SIZE];
+        result = nvmlDeviceGetSerial(device, deviceSerial, NVML_DEVICE_SERIAL_BUFFER_SIZE);
+        if (NVML_SUCCESS == result) {
+            deviceInfo.serial = std::string(deviceSerial);
+        } else {
+            std::cout << "Failed to get device serial: " << nvmlErrorToString(result) << std::endl;
+        }                                    
         deviceInfoArray.push_back(deviceInfo);
     }
 
