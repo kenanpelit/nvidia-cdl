@@ -231,6 +231,8 @@ void printDeviceInfo(
         std::cout << std::setw(5) << deviceInfo[i].usedMemory << "MiB" << " / " << std::setw(5) << deviceInfo[i].totalMemory << "MiB" << std::endl;
         if (isPrintPlainOutput) {
             std::cout << "Temperature: " << deviceInfo[i].temp << "C" << std::endl;
+	    std::cout << "UUID: " << deviceInfo[i].uuid << std::endl;
+	    std::cout << "Serial: " << deviceInfo[i].serial << std::endl;
         } else {
             std::cout << "Temperature: " << getTemperatureAsColorString(deviceInfo[i].temp) << deviceInfo[i].temp << "C" << REMOVE_ALL_ATTRIBUTES << std::endl;
         }
