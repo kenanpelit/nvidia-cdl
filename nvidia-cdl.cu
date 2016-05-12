@@ -237,6 +237,7 @@ void printDeviceInfo(
         if (isPrintOptionalInfoOfDevice) {
             std::cout << "PCI bus ID: " << deviceInfo[i].pciBusID << std::endl;
             std::cout << "UUID: " << deviceInfo[i].uuid << std::endl;
+	    std::cout << "Serial: " << deviceInfo[i].serial << std::endl;
         }
 
         if (deviceInfo[i].runningProcessesInfo.size() > 0) {
