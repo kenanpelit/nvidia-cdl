@@ -45,6 +45,7 @@ struct DeviceInfo {
     std::string pciBusID;
     std::string name;
     unsigned int temp;
+    unsigned int fan;
     unsigned long long totalMemory;
     unsigned long long usedMemory;
     unsigned long long freeMemory;
@@ -54,6 +55,7 @@ struct DeviceInfo {
 
     DeviceInfo()
         : temp(0),
+	fan(0),
         name("N/A"),
         pciBusID("N/A"),
         totalMemory(0),
@@ -167,6 +169,15 @@ std::vector<DeviceInfo> getDeviceInfoByNVML(const std::vector<std::string> &pciB
             std::cout << "Failed to get temperature: " << nvmlErrorToString(result) << std::endl;
         }
 
+	// Get the device's fan speed
+	unsigned int fanspeed;
+        result = nvmlDeviceGetFanSpeed(device, &fanspeed);
+        if (NVML_SUCCESS == result) {
+            deviceInfo.fan = fanspeed;
+        } else {
+            std::cout << "Failed to get fan speed: " << nvmlErrorToString(result) << std::endl;
+        }
+
         nvmlMemory_t memory;
         result = nvmlDeviceGetMemoryInfo(device, &memory);
         if (NVML_SUCCESS == result) {
@@ -210,7 +221,8 @@ void printDeviceInfo(
     const std::vector<DeviceInfo> &deviceInfo,
     std::string &driverVersionString,
     bool isPrintOptionalInfoOfDevice,
-    bool isPrintPlainOutput
+    bool isPrintPlainOutput,
+    bool isPrintCompactOutput
 ) {
     if (isPrintPlainOutput) {
         std::cout << "Driver version: " << driverVersionString << std::endl;
@@ -231,6 +243,7 @@ void printDeviceInfo(
         std::cout << std::setw(5) << deviceInfo[i].usedMemory << "MiB" << " / " << std::setw(5) << deviceInfo[i].totalMemory << "MiB" << std::endl;
         if (isPrintPlainOutput) {
             std::cout << "Temperature: " << deviceInfo[i].temp << "C" << std::endl;
+	    std::cout << "Fan Speed: " << deviceInfo[i].fan << "%" << std::endl;
 	    std::cout << "UUID: " << deviceInfo[i].uuid << std::endl;
 	    std::cout << "Serial: " << deviceInfo[i].serial << std::endl;
 	    std::cout << "Bus ID: " << deviceInfo[i].pciBusID << std::endl;
@@ -287,6 +300,7 @@ void printHelpInfo() {
     std::cout << "<no arguments>              Show a summary of GPUs connected to the system." << std::endl;
     std::cout << "-a                          Display extra info." << std::endl;
     std::cout << "--plain-output              Display info as plain text." << std::endl;
+    std::cout << "-c                          Display info in compact list." << std::endl;
     std::cout << std::endl;
 }
 
@@ -294,7 +308,8 @@ void parseParameters(
     const std::vector<std::string> &argvString,
     bool &isPrintOptionalInfoOfDevice,
     bool &isPrintHelpInfo,
-    bool &isPrintPlainOutput
+    bool &isPrintPlainOutput,
+    bool &isPrintCompactOutput
 ) {
     const int argc = argvString.size();
     // the first args is name of file.
@@ -305,13 +320,14 @@ void parseParameters(
             if (argvString[i].compare("-a") != 0 &&
                 argvString[i].compare("-h") != 0 &&
                 argvString[i].compare("--help") != 0 &&
-                argvString[i].compare("--plain-output") != 0
+                argvString[i].compare("--plain-output") != 0 &&
+		argvString[i].compare("-c") != 0
             ) {
                 throw std::string("Invalid combination of input arguments. Please run 'nvidia-cdl -h' for help.");
             } else {
                 // while provides one options at one time.
                 if (isAction) {
-                    throw std::string("Invalid combination of input arguments. Please run 'nvidia-cdl -h' for help.");
+                    throw std::string("ASInvalid combination of input arguments. Please run 'nvidia-cdl -h' for help.");
                 } else {
                     isAction = true;
                 }
@@ -327,6 +343,8 @@ void parseParameters(
                 isPrintHelpInfo = true;
             } else if (argvString[i].compare("--plain-output") == 0) {
                 isPrintPlainOutput = true;
+	    } else if (argvString[i].compare("--plain-output") == 0) {
+                isPrintCompactOutput = true;
             } else {
                 throw std::string("Invalid combination of input arguments. Please run 'nvidia-cdl -h' for help.");
             }
@@ -398,12 +416,13 @@ int main(int argc, char** argv) {
         bool isPrintOptionalInfoOfDevice = false;
         bool isPrintHelpInfo = false;
         bool isPrintPlainOutput = false;
+	bool isPrintCompactOutput = false;
 
         std::vector<std::string> argvString;
         for (int i = 0; i < argc; ++i) {
             argvString.push_back(std::string(argv[i]));
         }
-        parseParameters(argvString, isPrintOptionalInfoOfDevice, isPrintHelpInfo, isPrintPlainOutput);
+        parseParameters(argvString, isPrintOptionalInfoOfDevice, isPrintHelpInfo, isPrintPlainOutput, isPrintCompactOutput);
 
         if (isPrintHelpInfo) {
             printHelpInfo();
@@ -416,7 +435,7 @@ int main(int argc, char** argv) {
 
         findProccessesRunningOnDevices(deviceInfoFromNVML);
 
-        printDeviceInfo(deviceInfoFromNVML, driverVersionString, isPrintOptionalInfoOfDevice, isPrintPlainOutput);
+        printDeviceInfo(deviceInfoFromNVML, driverVersionString, isPrintOptionalInfoOfDevice, isPrintPlainOutput, isPrintCompactOutput);
 
     } catch (std::string &message) {
         std::cout << message << std::endl;
